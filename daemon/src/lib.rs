@@ -303,7 +303,7 @@ impl FileChangeListener {
             Err(_) => return Err(FileChangeListenerCreationError { kind: FileChangeListenerCreationErrorKind::NoHomeDir })
         };
 
-        let steam_path = Path::new(&key).join(".var/app/com.valvesoftware.Steam/data/icons");
+        let steam_path = Path::new(&key).join(".var/app/com.valvesoftware.Steam/data/applications");
 
         if !steam_path.is_dir() {
             return Err(FileChangeListenerCreationError { kind: FileChangeListenerCreationErrorKind::NoSteamDir });
@@ -326,8 +326,8 @@ impl FileChangeListener {
             loop {
                 match rx.try_recv() {
                     Ok(_) => match sender.send(()) {
-                        Ok(()) => {}
-                        Err(e) => eprintln!("Failed to signal synchronizer: {}", e)
+                        Ok(()) => println!("File change detected, sync request sent."),
+                        Err(e) => eprintln!("Failed to signal synchronizer from FileChangeListener: {}", e)
                     },
                     Err(e) => match e {
                         TryRecvError::Disconnected => {
@@ -417,7 +417,7 @@ impl SocketListener {
 
                         if buf == "RUN_SYNC" {
                             match sender.send(()) {
-                                Ok(()) => {}
+                                Ok(()) => println!("Manual sync request received, sync request sent."),
                                 Err(e) => eprintln!("Failed to signal synchronizer: {}", e)
                             }
                         }
