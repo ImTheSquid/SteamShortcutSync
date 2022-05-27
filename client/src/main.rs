@@ -12,7 +12,7 @@ fn main() {
 
     let path = Path::new(&key).join("steam-shortcut-sync.sock");
 
-    if !path.is_file() {
+    if !path.exists() {
         eprintln!("Steam Shortcut Sync daemon is not running! Please start it first.");
         process::exit(2);
     }
@@ -30,8 +30,6 @@ fn main() {
             eprintln!("Failed to signal daemon: {}", e);
             process::exit(4);
         }
-        Ok(()) => {}
+        Ok(()) => println!("Synchronization started")
     }
-
-    // Wait for response
 }
