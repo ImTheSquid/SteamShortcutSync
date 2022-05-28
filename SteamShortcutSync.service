@@ -1,0 +1,8 @@
+[Unit]
+Description=Steam Shortcut Sync Daemon
+[Service]
+Type=simple
+StandardOutput=journal
+ExecStart=%h/.cargo/bin/steam-shortcut-sync
+[Install]
+WantedBy=default.target

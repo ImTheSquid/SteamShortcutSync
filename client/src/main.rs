@@ -1,3 +1,16 @@
+//! Steam Shortcut Sync Client
+//! 
+//! A simple executable for signaling the Steam Shortcut Sync daemon through a Unix socket.
+//! 
+//! ## Exit Codes
+//! `1`: The `XDG_RUNTIME_DIR` environment variable is not defined.
+//! 
+//! `2`: The Steam Shortcut Sync daemon is not running.
+//! 
+//! `3`: There was an error opening the Unix socket stream.
+//! 
+//! `4`: There was an error signaling the daemon.
+
 use std::{env, process, os::unix::net::UnixStream, path::Path, io::Write};
 
 fn main() {

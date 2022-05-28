@@ -1,9 +1,12 @@
 [package]
-name = "steam_shortcut_sync"
-version = "0.1.0"
+name = "steam-shortcut-sync"
+description = "Automatically synchronizes Steam shortcuts from a Flatpak install to the normal applications directory"
+version = "1.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+license = "MIT"
+repository = "https://github.com/ImTheSquid/SteamShortcutSync"
+homepage = "https://github.com/ImTheSquid/SteamShortcutSync"
+readme = "README.md"
 
 [dependencies]
 ctrlc="3.2.2"

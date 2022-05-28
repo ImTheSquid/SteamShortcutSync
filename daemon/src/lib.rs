@@ -1,3 +1,7 @@
+//! # Steam Shortcut Sync
+//! 
+//! A library and daemon for automatically synchronizing Steam shortcuts from a Flatpak installation to the normal applications directory.
+
 use std::{sync::{atomic::{AtomicBool, Ordering}, mpsc::{self, TryRecvError}, Arc}, thread, os::unix::net::UnixListener, env::{self, VarError}, path::{Path, PathBuf}, io::{self, Read, Error}, process::{self, Command}, time::Duration, fs, collections::HashMap};
 use lazy_static::lazy_static;
 
@@ -5,6 +9,7 @@ use notify::Watcher;
 use regex::Regex;
 use walkdir::WalkDir;
 
+/// Coordinates and controls synchronization requests.
 pub struct Synchronizer {
     thread: Option<thread::JoinHandle<()>>
 }
@@ -14,14 +19,18 @@ enum SynchronizerChildCommand {
     Die
 }
 
+/// Possible errors when creating a `Synchronizer`.
 pub struct SynchronizerCreationError {
+    /// The specific kind of error.
     pub kind: SynchronizerCreationErrorKind
 }
 
 #[derive(Debug, Clone)]
 pub enum SynchronizerCreationErrorKind {
+    /// The `HOME` environment variable is not defined.
     NoHomeDir,
-    NoApplicationsDir
+    /// There isn't a desktop files directory at `$HOME/.local/share/applications`.
+    NoApplicationsDir,
 }
 
 #[derive(Hash, PartialEq, Eq)]
@@ -31,6 +40,10 @@ struct SteamDesktopFile {
 }
 
 impl Synchronizer {
+    /// Creates a new `Synchronizer`.
+    /// 
+    /// An event from `receiver` triggers a synchronization.
+    /// Setting `run` to `false` terminates `Synchronizer`'s internal thread, ceasing its function.
     pub fn new(receiver: mpsc::Receiver<()>, run: Arc<AtomicBool>) -> Result<Synchronizer, SynchronizerCreationError> {
         let desktop_path = match Self::steam_dir() {
             Ok(val) => val,
@@ -99,6 +112,7 @@ impl Synchronizer {
         Ok(Synchronizer { thread: Some(thread) })
     }
 
+    /// Waits for the `Synchronizer`'s internal thread to join.
     pub fn join(&mut self) {
         if let Some(thread) = self.thread.take() {
             thread.join().expect("Unable to join thread");
@@ -279,23 +293,32 @@ impl Synchronizer {
     }
 }
 
+/// Watches Steam's Flatpak applications directory for `.desktop` file changes and triggers a synchronization when they do.
 pub struct FileChangeListener {
     thread: Option<thread::JoinHandle<()>>
 }
 
+/// Possible errors when creating a `FileChangeListener`.
 pub struct FileChangeListenerCreationError {
+    /// The specific kind of error.
     pub kind: FileChangeListenerCreationErrorKind
 }
 
 #[derive(Debug, Clone)]
 pub enum FileChangeListenerCreationErrorKind {
+    /// The `HOME` environment variable is not defined.
     NoHomeDir,
+    /// There is no valid steam installation at `$HOME/.var/app/com.valvesoftware.Steam`.
     NoSteamDir,
-    NoApplicationsDir,
+    /// An error occured when trying to watch the Steam `applications` directory.
     UnableToWatch
 }
 
 impl FileChangeListener {
+    /// Creates a new `FileChangeListener`.
+    /// 
+    /// The `sender` should trigger a synchronization.
+    /// Setting `run` to `false` terminates `FileChangeListener`'s internal thread, ceasing its function.
     pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>) -> Result<FileChangeListener, FileChangeListenerCreationError> {
         // Currently only looks at Flatpak directory
         let key = match env::var("HOME") {
@@ -355,6 +378,7 @@ impl FileChangeListener {
         Ok(FileChangeListener { thread: Some(thread) })
     }
 
+    /// Waits for the `FileChangeListener`'s internal thread to join.
     pub fn join(&mut self) {
         if let Some(thread) = self.thread.take() {
             thread.join().expect("Unable to join thread");
@@ -362,22 +386,33 @@ impl FileChangeListener {
     }
 }
 
+/// Listens on a Unix socket for manual control over synchronizations.
+/// 
+/// Can be used with the `steam-shortcut-sync-client` crate.
 pub struct SocketListener {
     thread: Option<thread::JoinHandle<()>>
 }
 
+/// Possible errors when creating a `SocketListener`.
 #[derive(Debug, Clone)]
 pub struct SocketListenerCreationError {
+    /// The specific kind of error.
     pub kind: SocketListenerCreationErrorKind
 }
 
 #[derive(Debug, Clone)]
 pub enum SocketListenerCreationErrorKind {
+    /// The `XDG_RUNTIME_DIR` environment variable is not defined.
     NoRuntimeDir,
-    NoSocket
+    /// An error occured while trying to create the socket.
+    UnableToCreateSocket
 }
 
 impl SocketListener {
+    /// Creates a new `SocketListener`.
+    /// 
+    /// The `sender` should trigger a synchronization.
+    /// Setting `run` to `false` terminates `SocketListener`'s internal thread, ceasing its function.
     pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>) -> Result<SocketListener, SocketListenerCreationError> {
         // Attempt to load env var
         let key = match env::var("XDG_RUNTIME_DIR") {
@@ -392,7 +427,7 @@ impl SocketListener {
             Ok(sock) => sock,
             Err(e) => {
                 eprintln!("Failed to create listener: {}", e);
-                return Err(SocketListenerCreationError { kind: SocketListenerCreationErrorKind::NoSocket });
+                return Err(SocketListenerCreationError { kind: SocketListenerCreationErrorKind::UnableToCreateSocket });
             }
         };
 
@@ -442,6 +477,7 @@ impl SocketListener {
         Ok(SocketListener { thread: Some(thread) })
     }
 
+    /// Waits for the `SocketListeners`'s internal thread to join.
     pub fn join(&mut self) {
         if let Some(thread) = self.thread.take() {
             thread.join().expect("Unable to join thread");

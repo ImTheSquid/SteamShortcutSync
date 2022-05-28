@@ -1,8 +1,10 @@
 [package]
-name = "steam_shortcut_sync_client"
-version = "0.1.0"
+name = "steam-shortcut-sync-client"
+description = "Client to notify Steam Shortcut Sync daemon to run immediately"
+version = "1.0.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+license = "MIT"
+repository = "https://github.com/ImTheSquid/SteamShortcutSync"
+homepage = "https://github.com/ImTheSquid/SteamShortcutSync"
+categories = ["command-line-utilities"]
+readme= "README.md"

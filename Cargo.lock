@@ -283,8 +283,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb703cfe953bccee95685111adeedb76fabe4e97549a58d16f03ea7b9367bb32"
 
 [[package]]
-name = "steam_shortcut_sync"
-version = "0.1.0"
+name = "steam-shortcut-sync"
+version = "1.0.0"
 dependencies = [
  "ctrlc",
  "lazy_static",
@@ -294,8 +294,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "steam_shortcut_sync_client"
-version = "0.1.0"
+name = "steam-shortcut-sync-client"
+version = "1.0.0"
 
 [[package]]
 name = "walkdir"
