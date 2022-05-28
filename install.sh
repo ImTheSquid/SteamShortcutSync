@@ -1,9 +1,10 @@
 #!/bin/sh
 
-cargo install steam_shortcut_sync
-cargo install steam_shortcut_sync_client
+cargo install steam-shortcut-sync
+cargo install steam-shortcut-sync-client
 
 BASEDIR=$(dirname $0)
-cp $BASEDIR/SteamShortcutSync.service $HOME/.local/share/systemd/user/
+mkdir -p $HOME/.local/share/systemd/user/
+cp $BASEDIR/SteamShortcutSync.service $HOME/.local/share/systemd/user/SteamShortcutSync.service
 systemctl --user enable SteamShortcutSync.service
 systemctl --user start SteamShortcutSync.service
