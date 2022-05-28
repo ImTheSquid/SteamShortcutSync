@@ -43,6 +43,6 @@ fn main() {
             eprintln!("Failed to signal daemon: {}", e);
             process::exit(4);
         }
-        Ok(()) => println!("Synchronization started")
+        Ok(()) => println!("Synchronization requested")
     }
 }

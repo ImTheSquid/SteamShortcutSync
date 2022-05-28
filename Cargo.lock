@@ -284,7 +284,7 @@ checksum = "eb703cfe953bccee95685111adeedb76fabe4e97549a58d16f03ea7b9367bb32"
 
 [[package]]
 name = "steam-shortcut-sync"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "ctrlc",
  "lazy_static",
@@ -295,7 +295,7 @@ dependencies = [
 
 [[package]]
 name = "steam-shortcut-sync-client"
-version = "1.0.0"
+version = "1.0.1"
 
 [[package]]
 name = "walkdir"
