@@ -1,4 +1,4 @@
-use std::{sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc}, process};
+use std::{sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc}, process, time::Duration};
 
 use steam_shortcut_sync::{Synchronizer, FileChangeListener, SocketListener};
 
@@ -8,7 +8,7 @@ fn main() {
 
     // Ctrl+C handling
     match ctrlc::set_handler(move || {
-        print!("\n");
+        println!("Interrupt!");
         r.store(false, Ordering::SeqCst);
     }) {
         Ok(_) => {},
@@ -20,7 +20,7 @@ fn main() {
 
     let (sender, receiver) = mpsc::channel();
 
-    let mut sync = match Synchronizer::new(receiver, Arc::clone(&run)) {
+    let mut sync = match Synchronizer::new(receiver, Arc::clone(&run), Duration::from_secs(5)) {
         Ok(s) => s,
         Err(_) => {
             eprintln!("Error creating synchronizer!");
@@ -28,7 +28,7 @@ fn main() {
         }
     };
 
-    let mut file_watcher = match FileChangeListener::new(sender.clone(), Arc::clone(&run)) {
+    let mut file_watcher = match FileChangeListener::new(sender.clone(), Arc::clone(&run), Duration::from_secs(5)) {
         Ok(f) => f,
         Err(_) => {
             eprintln!("Error creating file watcher!");
@@ -36,7 +36,7 @@ fn main() {
         }
     };
 
-    let mut socket_watcher = match SocketListener::new(sender.clone(), Arc::clone(&run)) {
+    let mut socket_watcher = match SocketListener::new(sender.clone(), Arc::clone(&run), Duration::from_secs(5)) {
         Ok(s) => s,
         Err(_) => {
             eprintln!("Error creating socket watcher!");
@@ -45,6 +45,9 @@ fn main() {
     };
 
     println!("Startup Complete");
+
+    // Initial run on startup
+    sender.send(()).unwrap();
 
     file_watcher.join();
     socket_watcher.join();

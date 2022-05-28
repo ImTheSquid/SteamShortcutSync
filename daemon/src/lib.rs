@@ -44,7 +44,8 @@ impl Synchronizer {
     /// 
     /// An event from `receiver` triggers a synchronization.
     /// Setting `run` to `false` terminates `Synchronizer`'s internal thread, ceasing its function.
-    pub fn new(receiver: mpsc::Receiver<()>, run: Arc<AtomicBool>) -> Result<Synchronizer, SynchronizerCreationError> {
+    /// `sleep_time` controls how long the thread sleeps between checking for a synchronization request. Warning: This blocks shutdown requests while the thread is sleeping.
+    pub fn new(receiver: mpsc::Receiver<()>, run: Arc<AtomicBool>, sleep_time: Duration) -> Result<Synchronizer, SynchronizerCreationError> {
         let desktop_path = match Self::steam_dir() {
             Ok(val) => val,
             Err(_) => return Err(SynchronizerCreationError { kind: SynchronizerCreationErrorKind::NoHomeDir })
@@ -103,6 +104,7 @@ impl Synchronizer {
                                 worker.join().expect("Unable to join worker thread");
                                 break;
                             }
+                            thread::sleep(sleep_time);
                         }
                     }
                 }
@@ -319,7 +321,8 @@ impl FileChangeListener {
     /// 
     /// The `sender` should trigger a synchronization.
     /// Setting `run` to `false` terminates `FileChangeListener`'s internal thread, ceasing its function.
-    pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>) -> Result<FileChangeListener, FileChangeListenerCreationError> {
+    /// `sleep_time` controls how long the thread sleeps between checking for a change in files. Warning: This blocks shutdown requests while the thread is sleeping.
+    pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>, sleep_time: Duration) -> Result<FileChangeListener, FileChangeListenerCreationError> {
         // Currently only looks at Flatpak directory
         let key = match env::var("HOME") {
             Ok(val) => val,
@@ -369,6 +372,7 @@ impl FileChangeListener {
 
                                 break;
                             }
+                            thread::sleep(sleep_time);
                         }
                     }
                 }
@@ -413,7 +417,8 @@ impl SocketListener {
     /// 
     /// The `sender` should trigger a synchronization.
     /// Setting `run` to `false` terminates `SocketListener`'s internal thread, ceasing its function.
-    pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>) -> Result<SocketListener, SocketListenerCreationError> {
+    /// `sleep_time` controls how long the thread sleeps between checking for a socket write. Warning: This blocks shutdown requests while the thread is sleeping.
+    pub fn new(sender: mpsc::Sender<()>, run: Arc<AtomicBool>, sleep_time: Duration) -> Result<SocketListener, SocketListenerCreationError> {
         // Attempt to load env var
         let key = match env::var("XDG_RUNTIME_DIR") {
             Ok(val) => val,
@@ -468,6 +473,7 @@ impl SocketListener {
                             }
                             break;
                         }
+                        thread::sleep(sleep_time);
                     }
                     Err(e) => eprintln!("Failed to get stream: {}", e)
                 }
