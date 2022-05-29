@@ -3,6 +3,8 @@ use std::{sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc}, process, time::Dura
 use steam_shortcut_sync::{Synchronizer, FileChangeListener, SocketListener};
 
 fn main() {
+    println!("Steam Shortcut Sync v.{}", option_env!("CARGO_PKG_VERSION").unwrap_or("UNKNOWN"));
+
     let run = Arc::new(AtomicBool::new(true));
     let r= Arc::clone(&run);
 

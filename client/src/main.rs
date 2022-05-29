@@ -14,6 +14,8 @@
 use std::{env, process, os::unix::net::UnixStream, path::Path, io::Write};
 
 fn main() {
+    println!("Steam Shortcut Sync Client v.{}", option_env!("CARGO_PKG_VERSION").unwrap_or("UNKNOWN"));
+
     // Open a socket to communicate with daemon
     let key = match env::var("XDG_RUNTIME_DIR") {
         Ok(val) => val,
