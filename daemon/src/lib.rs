@@ -136,7 +136,7 @@ impl Synchronizer {
     fn icons_dir() -> Result<PathBuf, VarError> {
         let key = env::var("HOME")?;
 
-        Ok(Path::new(&key).join(".icons"))
+        Ok(Path::new(&key).join(".local/share/icons"))
     }
 
     fn icon_from_id(id: &str, root: &PathBuf) -> Option<PathBuf> {
